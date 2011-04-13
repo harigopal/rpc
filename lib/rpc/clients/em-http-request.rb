@@ -12,6 +12,12 @@ module RPC
         @client = EventMachine::HttpRequest.new(uri)
       end
 
+      def connect
+      end
+
+      def disconnect
+      end
+
       def run(&block)
         EM.run do
           block.call
