@@ -3,6 +3,7 @@
 module RPC
   module Clients
     autoload :NetHttp, "rpc/clients/net-http"
+    autoload :EmHttpRequest, "rpc/clients/em-http-request"
   end
 
   module Encoders
@@ -55,13 +56,21 @@ module RPC
   end
 
   class Client < BasicObject
-    def self.setup(host, port, client_class = Clients::NetHttp, encoder = Encoders::Json::Client.new)
-      client = client_class.new(host, port)
+    def self.setup(uri, client_class = Clients::NetHttp, encoder = Encoders::Json::Client.new)
+      client = client_class.new(uri)
       self.new(client, encoder)
     end
 
-    def initialize(client, encoder)
-      @client, @encoder, @callbacks = client, encoder, ::Hash.new
+    def initialize(client, encoder = Encoders::Json::Client.new, &block)
+      @client, @encoder = client, encoder
+
+      if block
+        @client.run do
+          block.call(self)
+        end
+      else
+        @client.connect
+      end
     end
 
     # 1) Sync: it'll return the value.
@@ -70,8 +79,10 @@ module RPC
       binary = @encoder.encode(method, *args)
 
       if @client.async?
-        @callbacks[id] = callback if callback
-        @client.send(binary)
+        @client.send(binary) do |encoded_result|
+          result = @encoder.decode(encoded_result)
+          callback.call(result["result"], get_exception(result["error"]))
+        end
       else
         ::Kernel.raise("You can't specify callback for a synchronous client.") if callback
 
@@ -99,17 +110,8 @@ module RPC
       instance
     end
 
-    def subscribe(*args, &block)
-      ::Kernel.raise("Client is synchronous") unless @client.async?
-      @client.subscribe(self, *args, &block)
-    end
-
-    def receive(encoded_result)
-      result = @encoder.decode(encoded_result)
-      if callback = @callbacks[result["id"]]
-        @callbacks.delete(result["id"])
-        callback.call(result["result"], get_exception(result["error"]))
-      end
+    def close_connection
+      @client.disconnect
     end
   end
 end

@@ -1,3 +1,4 @@
 = Version 0.1
-  * [FEATURE] Net::HTTP client.
+  * [FEATURE] Net::HTTP(S) client.
+  * [FEATURE] EM HTTP Request client.
   * [FEATURE] JSON-RPC encoder.

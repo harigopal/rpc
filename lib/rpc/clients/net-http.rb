@@ -1,13 +1,19 @@
 # encoding: utf-8
 
-require "net/http"
+require "uri"
+
+module Net
+  autoload :HTTP,  "net/http"
+  autoload :HTTPS, "net/https"
+end
 
 module RPC
   module Clients
     class NetHttp
-      def initialize(host, port = 80, path = "/")
-        @host, @port, @path = host, port, path
-        @client = Net::HTTP.start(host, port)
+      def initialize(uri)
+        @uri = URI.parse(uri)
+        klass = Net.const_get(@uri.scheme.upcase)
+        @client = klass.new(@uri.host, @uri.port)
       end
 
       def connect
@@ -18,8 +24,15 @@ module RPC
         @client.finish
       end
 
+      def run(&block)
+        self.connect
+        block.call
+        self.disconnect
+      end
+
       def send(data)
-        @client.post(@path, data).body
+        path = @uri.path.empty? ? "/" : @uri.path
+        @client.post(path, data).body
       end
 
       def async?

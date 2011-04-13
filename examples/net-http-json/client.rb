@@ -7,7 +7,7 @@ require "rpc"
 
 RPC.logging = true
 
-client = RPC::Client.setup("127.0.0.1", 8081)
+client = RPC::Client.setup("http://127.0.0.1:8081")
 
 # Get result of an existing method.
 puts "Server timestamp is #{client.server_timestamp}"
