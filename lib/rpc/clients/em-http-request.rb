@@ -5,11 +5,19 @@
 require "eventmachine"
 require "em-http-request"
 
+# Note that we support only HTTP POST. JSON-RPC can be done
+# via HTTP GET as well, but since HTTP POST is the preferred
+# method, I decided to implement only it. More info can is here:
+# http://groups.google.com/group/json-rpc/web/json-rpc-over-http
+
 module RPC
   module Clients
     class EmHttpRequest
+      HEADERS ||= {"Accept" => "application/json-rpc"}
+
       def initialize(uri)
         @client = EventMachine::HttpRequest.new(uri)
+        @in_progress = 0
       end
 
       def connect
@@ -21,14 +29,21 @@ module RPC
       def run(&block)
         EM.run do
           block.call
-          EM.add_timer(0.5) { EM.stop } # FIXME: Is there any way how to stop reactor when there are no remaining events? If not, we'd need to add callback for each request which would test if there are other active requests AND if the run &block is already finished.
+
+          # Note: There's no way how to stop the
+          # reactor when there are no remaining events.
+          EM.add_periodic_timer(0.1) do
+            EM.stop if @in_progress == 0
+          end
         end
       end
 
       def send(data, &callback)
-        request = @client.post(body: data)
+        request = @client.post(head: HEADERS, body: data)
+        @in_progress += 1
         request.callback do |response|
           callback.call(response.response)
+          @in_progress -= 1
         end
       end
 

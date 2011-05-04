@@ -3,12 +3,13 @@
 
 # http://groups.google.com/group/json-rpc/web/json-rpc-over-http
 
-$LOAD_PATH.unshift File.expand_path("../../../lib", __FILE__)
+$LOAD_PATH.unshift File.expand_path("../../lib", __FILE__)
 
 require "rpc"
 require "rack/request"
 
 RPC.logging = true
+# RPC.development = true
 
 class RpcRunner
   def server
@@ -29,8 +30,7 @@ class RpcRunner
   def response(status, body)
     headers = {
       "Content-Type" => "application/json-rpc",
-      "Content-Length" => body.bytesize.to_s,
-      "Accept" => "application/json-rpc"}
+      "Content-Length" => body.bytesize.to_s}
     [status, headers, [body]]
   end
 end

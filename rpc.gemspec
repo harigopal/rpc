@@ -5,7 +5,7 @@ require "base64"
 
 Gem::Specification.new do |s|
   s.name = "rpc"
-  s.version = "0.1"
+  s.version = "0.2"
   s.authors = ["Jakub Stastny aka botanicus"]
   s.homepage = "http://github.com/ruby-amqp/rpc"
   s.summary = "Generic RPC library for Ruby."

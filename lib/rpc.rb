@@ -19,9 +19,15 @@ module RPC
   end
 
   def self.log(message)
-    if self.logging
-      STDERR.puts(message)
-    end
+    STDERR.puts(message) if self.logging
+  end
+
+  def self.development=(boolean)
+    @development = boolean
+  end
+
+  def self.development?
+    !! @development
   end
 
   def self.full_const_get(const_name)
@@ -73,6 +79,16 @@ module RPC
       end
     end
 
+    def notification(*args)
+      data = @encoder.notification(*args)
+      @client.send(data)
+    end
+
+    def batch(*args)
+      data = @encoder.batch(*args)
+      @client.send(data)
+    end
+
     # 1) Sync: it'll return the value.
     # 2) Async: you have to add #subscribe
     def method_missing(method, *args, &callback)
@@ -89,12 +105,22 @@ module RPC
         encoded_result = @client.send(binary)
         result = @encoder.decode(encoded_result)
 
-        if error = result["error"]
-          exception = self.get_exception(error)
-          ::Kernel.raise(exception)
-        else
-          result["result"]
+        if result.respond_to?(:merge) # Hash, only one result.
+          result_or_raise(result)
+        else # Array, multiple results.
+          result.map do |result|
+            result_or_raise(result)
+          end
         end
+      end
+    end
+
+    def result_or_raise(result)
+      if error = result["error"]
+        exception = self.get_exception(error)
+        ::Kernel.raise(exception)
+      else
+        result["result"]
       end
     end
 

@@ -1,3 +1,6 @@
+= Version 0.2
+  * [FEATURE] Full JSON-RPC 2.0 support (added batch, errors and notifications).
+
 = Version 0.1
   * [FEATURE] Net::HTTP(S) client.
   * [FEATURE] EM HTTP Request client.
