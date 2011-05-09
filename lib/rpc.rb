@@ -91,13 +91,25 @@ module RPC
 
     # 1) Sync: it'll return the value.
     # 2) Async: you have to add #subscribe
+
+    # TODO: this should be refactored and moved to the encoder,
+    # because result["error"] and similar are JSON-RPC-specific.
     def method_missing(method, *args, &callback)
       binary = @encoder.encode(method, *args)
 
-      if @client.async?
+      if @client.async? && ! callback # Assume notification.
+        @client.send(binary)
+      elsif @client.async? && callback
         @client.send(binary) do |encoded_result|
           result = @encoder.decode(encoded_result)
-          callback.call(result["result"], get_exception(result["error"]))
+
+          if result.respond_to?(:merge) # Hash, only one result.
+            callback.call(result["result"], get_exception(result["error"]))
+          else # Array, multiple results.
+            result.map do |result|
+              callback.call(result["result"], get_exception(result["error"]))
+            end
+          end
         end
       else
         ::Kernel.raise("You can't specify callback for a synchronous client.") if callback
