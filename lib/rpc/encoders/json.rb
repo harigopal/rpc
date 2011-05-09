@@ -75,6 +75,10 @@ module RPC
 
         # TODO: support batch
         def decode(binary)
+          if binary.nil?
+            raise TypeError.new("#{self.class}#decode takes binary data as an argument, not nil!")
+          end
+
           object = JSON.parse(binary)
           RPC.log "CLIENT DECODE #{object.inspect}"
           object
