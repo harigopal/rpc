@@ -42,7 +42,10 @@ module RPC
         request = @client.post(head: HEADERS, body: data)
         @in_progress += 1
         request.callback do |response|
-          callback.call(response.response)
+          if callback
+            callback.call(response.response)
+          end
+
           @in_progress -= 1
         end
       end
