@@ -4,6 +4,7 @@ module RPC
   module Clients
     autoload :NetHttp, "rpc/clients/net-http"
     autoload :EmHttpRequest, "rpc/clients/em-http-request"
+    autoload :Socket, "rpc/clients/socket"
   end
 
   module Encoders
@@ -115,6 +116,11 @@ module RPC
         ::Kernel.raise("You can't specify callback for a synchronous client.") if callback
 
         encoded_result = @client.send(binary)
+
+        if encoded_result.nil?
+          ::Kernel.raise("Bug in #{@client.class}#send(data), it can never return nil in the sync mode!")
+        end
+
         result = @encoder.decode(encoded_result)
 
         if result.respond_to?(:merge) # Hash, only one result.
