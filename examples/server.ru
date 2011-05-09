@@ -41,7 +41,7 @@ class RemoteObject
   end
 
   def buggy_method
-    raise "It doesn't work!"
+    raise "This exception is expected."
   end
 
   def method_missing(name, *args)

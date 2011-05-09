@@ -24,7 +24,8 @@ end
 
 # Notification isn't supported, because HTTP works in
 # request/response mode, so it does behave in the same
-# manner as RPC via method_missing.
+# manner as RPC via method_missing. Sense of this is
+# only to check, that it won't blow up.
 puts "Sending a notification ..."
 client.notification(:log, "Some shit.")
 

@@ -25,4 +25,15 @@ RPC::Client.new(client) do |client|
     STDERR.puts "EXCEPTION CAUGHT:"
     STDERR.puts "#{error.class} #{error.message}"
   end
+
+  # Notification isn't supported, because HTTP works in
+  # request/response mode, so it does behave in the same
+  # manner as RPC via method_missing. Sense of this is
+  # only to check, that it won't blow up.
+  puts "Sending a notification ..."
+  client.notification(:log, "Some shit.")
+
+  # Batch.
+  result = client.batch([[:log, ["Message"], nil], [:a_method, []]])
+  puts "Batch result: #{result}"
 end
