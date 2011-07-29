@@ -148,7 +148,12 @@ module RPC
       resolved_class = ::RPC.full_const_get(exception["class"])
       klass = resolved_class || ::RuntimeError
       message = resolved_class ? exception["message"] : error["message"]
-      instance = klass.new(message)
+      case klass.instance_method(:initialize).arity
+        when 2
+          instance = klass.new(message, nil)
+        else
+          instance = klass.new(message)
+      end
       instance.extend(::RPC::ExceptionsMixin)
       instance.server_backtrace = exception["backtrace"]
       instance
