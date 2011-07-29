@@ -52,7 +52,7 @@ module RPC
         def encode(method, *args)
           data = Request.new(method, args).data
           RPC.log "CLIENT ENCODE #{data.inspect}"
-          JSON.generate(data)
+          data.to_json
         end
 
         # Notifications are calls which don't require response.
@@ -60,7 +60,7 @@ module RPC
         def notification(method, *args)
           data = Request.new(method, args, nil).data
           RPC.log "CLIENT ENCODE NOTIFICATION #{data.inspect}"
-          JSON.generate(data)
+          data.to_json
         end
 
         # Provide list of requests and notifications to run on the server.
@@ -70,7 +70,7 @@ module RPC
         def batch(requests)
           data = requests.map { |request| Request.new(*request).data }
           RPC.log "CLIENT ENCODE BATCH #{data.inspect}"
-          JSON.generate(data)
+          data.to_json
         end
 
         # TODO: support batch
@@ -134,7 +134,7 @@ module RPC
 
         def encode(response)
           RPC.log "SERVER ENCODE: #{response.inspect}"
-          JSON.generate(response)
+          response.to_json
         end
       end
     end
