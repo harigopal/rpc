@@ -10,7 +10,7 @@ Gem::Specification.new do |s|
   s.homepage = "http://github.com/ruby-amqp/rpc"
   s.summary = "Generic RPC library for Ruby."
   s.description = "#{s.summary} Currently it supports JSON-RPC over HTTP, support for AMQP and Redis will follow soon."
-  s.cert_chain = nil
+  s.cert_chain = []
   s.email = Base64.decode64("c3Rhc3RueUAxMDFpZGVhcy5jeg==\n")
   s.has_rdoc = true
 
