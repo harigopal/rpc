@@ -39,7 +39,12 @@ module RPC
 
       def send(data)
         path = @uri.path.empty? ? "/" : @uri.path
-        @client.post(path, data, HEADERS).body
+
+        begin
+          @client.post(path, data, HEADERS).body
+        rescue EOFError
+          retry
+        end
       end
 
       def async?
